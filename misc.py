@@ -1,4 +1,4 @@
-```python
+python
 import requests
 import os
 import discord
@@ -76,4 +76,3 @@ def setup(bot):
     check_folder()
     check_file()
     bot.add_cog(Misc(bot))
-```

@@ -51,6 +51,7 @@ class Creddit:
         then it will default to "hot"
         """
         server = ctx.message.server
+        # server.emojis = 
         if(post<1 or post>20):
             post = 1
         if(sort == 'hot' or sort.lower() == 'new' or sort.lower() == 'rising' or 
@@ -215,8 +216,8 @@ class Creddit:
                 downvotes = '0'
                 netupvotes = '0'
 
-            print("{}\n{}\n{}\n{}\n{}\n{}".format(downvoteperc, upvoteperc, downvotes, upvotes, netupvotes, totalvotes))
-            print("{}\n{}\n{}\n{}\n{}\n{}".format(type(downvoteperc), type(upvoteperc), type(downvotes), type(upvotes), type(netupvotes), type(totalvotes)))
+            # print("{}\n{}\n{}\n{}\n{}\n{}".format(downvoteperc, upvoteperc, downvotes, upvotes, netupvotes, totalvotes))
+            # print("{}\n{}\n{}\n{}\n{}\n{}".format(type(downvoteperc), type(upvoteperc), type(downvotes), type(upvotes), type(netupvotes), type(totalvotes)))
             
 
             if(announce.lower() == 'yes' or announce.lower() == 'y'):
@@ -225,7 +226,7 @@ class Creddit:
                 tagline = str(ifannounce[post-1+amtannounce])
             
             downvotegraph = ''
-            print("\n\n{}\n\n".format(downvoteperc[0:-1]))
+            # print("\n\n{}\n\n".format(downvoteperc[0:-1]))
             downvotecircles = float(downvoteperc[0:-1])/10
             if((downvotecircles)<(math.floor(downvotecircles)+.5)):
                 downvotecircles = math.floor(downvotecircles)
@@ -243,8 +244,8 @@ class Creddit:
             partdowncircle = downvotecircles - int(downvotecircles)
             downvotecircles = int(downvotecircles)
             partdowncircle = str(partdowncircle)[2:3]
-            print(downvotecircles, ' ', partdowncircle)
-            print(upvotecircles, ' ', partupcircle)
+            # print(downvotecircles, ' ', partdowncircle)
+            # print(upvotecircles, ' ', partupcircle)
             # if(upvotecircles<(math.floor(upvotecircles)+.5)):
             #     upvotecircles = math.floor(upvotecircles)
             # else:
@@ -257,6 +258,7 @@ class Creddit:
             upvotegraph=''
             downvotegraph=''
             totalvotegraph=''
+            server = self.bot.get_server('264119826069454849')
             if(upvotes=='0' and downvotes=='0' and totalvotes=='0' and netupvotes=='0'
                 and upvoteperc=='0%' and downvoteperc=='0%'):
                 pass

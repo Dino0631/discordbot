@@ -120,7 +120,11 @@ class Reddit2:
                     if(bean5[ : bean5.find("/span></p>")]=='>announcement<'):
                         amtannounce+=1
             # print("\n\n{}\n\n".format(amtannounce))
-            topreddit = str(link3[post-1+amtannounce])
+            try:
+                topreddit = str(link3[post-1+amtannounce])
+            except:
+                await self.bot.say("Invalid subreddit")
+                return #not a valid subreddit
 
             bean4 = topreddit[topreddit.find(bean)+len(bean):]
             # print("{} start, {} finish".format(topreddit.find(bean)+len(bean), topreddit.find(bean)+len(bean)+bean4.find("\" ")))
@@ -133,7 +137,7 @@ class Reddit2:
                 postlink = redditUrl + toplink
                 isText=True
             if(sub!=''):
-                await self.bot.say("Post #{} on the **r/{}** subreddit:".format(post, sub))
+                await self.bot.say("Post #{} on the **{}** subreddit:".format(post, sub))
             else:
                 await self.bot.say("Post #{} on **Reddit**:".format(post, sub))
             # await self.bot.say('beans'.find('y'))

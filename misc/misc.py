@@ -35,6 +35,15 @@ import aiohttp
 from __main__ import send_cmd_help
 from cogs.economy import SetParser
 
+channel_name_to_id = {
+    'general'    : '291126049268563968',
+    'botspam'    : '340737442367799297',
+    'cr'         : '291128641335853056',
+    'streamclips': '292351030971334658',
+    'memes'      : '302615325390798849',
+    'gaschamber' : '340368355754115074',
+    'botdev'     : '340372201578430467'
+}
 RULES_URL = "https://www.reddit.com/r/CRRedditAlpha/comments/584ba2/reddit_alpha_clan_family_rules/"
 ROLES_URL = "https://www.reddit.com/r/CRRedditAlpha/wiki/roles"
 DISCORD_URL = "http://discord.gg/racf"
@@ -688,6 +697,58 @@ class RACF:
 
         await self.bot.delete_message(ctx.message)
 
+
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions()
+    async def addreaction2(self, ctx, *args):
+        """Add reactions to a message by message id.
+        
+        Add reactions to a specific message id
+        [p]addreation 123456 :white_check_mark: :x: :zzz: 
+        
+        Add reactions to the last message in channel
+        [p]addreation :white_check_mark: :x: :zzz: 
+        """
+        channel = ctx.message.channel
+
+        if not len(args):
+            await send_cmd_help(ctx)
+            return
+
+        has_message_id = args[0].isdigit()
+
+        emojis = args[1:] if has_message_id else args
+        message_id = args[0] if has_message_id else None
+        if has_message_id:
+            try:
+                message = await self.bot.get_message(channel, message_id)
+            except discord.NotFound:
+                await self.bot.say("Cannot find message with that id.")
+                return
+        else:
+            # use the 2nd last message because the last message would be the command
+            messages = [m async for m in self.bot.logs_from(channel, limit=2)]
+            message = messages[1]
+
+        await self.bot.say(message.id)
+        await self.bot.say(emojis)
+        for emoji in emojis:
+            try:
+                await self.bot.add_reaction(message, emoji)
+            except discord.HTTPException:
+                # reaction add failed
+                pass
+            except discord.Forbidden:
+                await self.bot.say(
+                    "I don’t have permission to react to that message.")
+                break
+            except discord.InvalidArgument:
+                await self.bot.say("Invalid arguments for emojis")
+                break
+
+        await self.bot.delete_message(ctx.message)
+
+
     # @commands.command(pass_context=True, no_pm=True)
     # async def toggleheist(self, ctx: Context):
     #     """Self-toggle heist role."""
@@ -1057,15 +1118,58 @@ class RACF:
         await self.bot.delete_message(message)
         await self.bot.say(msg)
 
+    # @checks.admin_or_permissions()
+    # @commands.command(pass_context=True)
+    # async def saygeneral(self, ctx, *, msg):
+    #     """Have bot say stuff. Remove command after run."""
+    #     message = ctx.message
+    #     server2 = ctx.message.server
+    #     server = self.bot.get_server('264119826069454849') #dino's test server
+    #     abeserver = self.bot.get_server('291126049268563968')
+    #     general_channel = abeserver.get_channel('291126049268563968')
+    #     #abe's server's general channel
+
+    #     # await self.bot.say(general_channel)
+    #     await self.bot.delete_message(message)
+    #     await self.bot.send_message(general_channel, msg)
+
+    # @checks.admin_or_permissions()
+    # @commands.command(pass_context=True)
+    # async def saybotspam(self, ctx, *, msg):
+    #     """Have bot say stuff. Remove command after run."""
+    #     message = ctx.message
+    #     server2 = ctx.message.server
+    #     server = self.bot.get_server('264119826069454849') #dino's test server
+    #     abeserver = self.bot.get_server('291126049268563968')
+    #     general_channel = abeserver.get_channel('340737442367799297')
+    #     #abe's server's botspam channel
+
+    #     # await self.bot.say(general_channel)
+    #     await self.bot.delete_message(message)
+    #     await self.bot.send_message(general_channel, msg)
+
+
+
     @checks.admin_or_permissions()
     @commands.command(pass_context=True)
-    async def saygeneral(self, ctx, *, msg):
+    async def saychan(self, ctx, channel, *, msg):
         """Have bot say stuff. Remove command after run."""
+        try:
+            channel_id = channel_name_to_id[channel]
+        except:
+            await self.bot.say("invalid channel, channels are:")
+            y = ''
+            for x in channel_name_to_id:
+                y = y + x +', '
+            y = y[:-2]
+            await self.bot.say(y)
+            return
+
         message = ctx.message
         server2 = ctx.message.server
         server = self.bot.get_server('264119826069454849') #dino's test server
         abeserver = self.bot.get_server('291126049268563968')
-        general_channel = abeserver.get_channel('291126049268563968')
+        general_channel = abeserver.get_channel(channel_id)
         #abe's server's general channel
 
         # await self.bot.say(general_channel)

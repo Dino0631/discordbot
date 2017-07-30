@@ -979,6 +979,11 @@ class RACF:
         '''reacts previous message with d, a, m, n emojis'''
         await ctx.invoke(self.reactword, 'damn')
 
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def jew(self, ctx):
+        '''reacts previous message with d, a, m, n emojis'''
+        await ctx.invoke(self.reactword, 'jew')
 
     @commands.command(pass_context=True)
     @commands.has_any_role(*BOTCOMMANDER_ROLE)

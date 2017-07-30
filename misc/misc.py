@@ -264,7 +264,7 @@ class RACF:
         await ctx.invoke(mm.changerole, member, *roles)
 
     @commands.command(pass_context=True, no_pm=True)
-    @commands.has_any_role(*BidOTCOMMANDER_ROLE)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
     async def addrole(
             self, ctx, member: discord.Member=None, *, role_name: str=None):
         """Add role to a user.

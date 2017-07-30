@@ -23,6 +23,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+import os
+from cogs.utils.dataIO import dataIO
 import itertools
 import discord
 from discord.ext import commands
@@ -34,6 +36,35 @@ from random import choice
 import aiohttp
 from __main__ import send_cmd_help
 from cogs.economy import SetParser
+
+emojiletter={
+    'a' : '🇦',
+    'b' : '🇧',
+    'c' : '🇨',
+    'd' : '🇩',
+    'e' : '🇪',
+    'f' : '🇫',
+    'g' : '🇬',
+    'h' : '🇭',
+    'i' : '🇮',
+    'j' : '🇯',
+    'k' : '🇰',
+    'l' : '🇱',
+    'm' : '🇲',
+    'n' : '🇳',
+    'o' : '🇴',
+    'p' : '🇵',
+    'q' : '🇶',
+    'r' : '🇷',
+    's' : '🇸',
+    't' : '🇹',
+    'u' : '🇺',
+    'v' : '🇻',
+    'w' : '🇼',
+    'x' : '🇽',
+    'y' : '🇾',
+    'z' : '🇿'
+}
 
 channel_name_to_id = {
     'general'    : '291126049268563968',
@@ -735,7 +766,7 @@ class RACF:
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions()
-    async def addreact(self, ctx, *args):
+    async def react(self, ctx, *args):
         """Add reactions to a message by message id.
         
         Add reactions to a specific message id
@@ -767,7 +798,6 @@ class RACF:
             async for m in self.bot.logs_from(channel, limit=2):
                 messages.append(m)
             message = messages[1]
-        # await self.bot.say(emojis)
 
         useremojis = list(emojis)
         new_emojis = []
@@ -782,8 +812,10 @@ class RACF:
             if(lastlist == new_emojis):
                 new_emojis.append(e)
 
+         # await self.bot.say(len(new_emojis[0]))
+
         # await self.bot.say(message.id)
-        # await self.bot.say(type(emojis[0]))
+        # await self.bot.say('`{}`'.format(new_emojis))
         # await self.bot.say(type(server.emojis[0]))
         # await self.bot.add_reaction(message, server.emojis[0])
         for emoji in new_emojis:
@@ -804,8 +836,9 @@ class RACF:
 
 
 
-
-    async def addreact(self, ctx, *args):
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def reactnoid(self, ctx, *args):
         """Add reactions to a message by message id.
         
         Add reactions to a specific message id
@@ -821,22 +854,13 @@ class RACF:
             await send_cmd_help(ctx)
             return
 
-        has_message_id = args[0].isdigit()
 
-        emojis = args[1:] if has_message_id else args
-        message_id = args[0] if has_message_id else None
-        if has_message_id:
-            try:
-                message = await self.bot.get_message(channel, message_id)
-            except discord.NotFound:
-                await self.bot.say("Cannot find message with that id.")
-                return
-        else:
-            # use the 2nd last message because the last message would be the command
-            messages = []
-            async for m in self.bot.logs_from(channel, limit=2):
-                messages.append(m)
-            message = messages[1]
+        emojis =  args
+        # use the 2nd last message because the last message would be the command
+        messages = []
+        async for m in self.bot.logs_from(channel, limit=2):
+            messages.append(m)
+        message = messages[1]
         # await self.bot.say(emojis)
 
         useremojis = list(emojis)
@@ -845,12 +869,12 @@ class RACF:
         for e in useremojis:
             lastlist = new_emojis
             for x in server.emojis:
-                ename = e[e.find(':') + 1 : e.rfind(':')]
+                ename = str(e)[str(e).find(':') + 1 : str(e).rfind(':')]
                 # await self.bot.say("{} == {}".format(x.name, ename))
                 if(x.name == ename):
                     new_emojis.append(x)
             if(lastlist == new_emojis):
-                new_emojis.append(e)
+                new_emojis.append(str(e))
 
         # await self.bot.say(message.id)
         # await self.bot.say(type(emojis[0]))
@@ -873,9 +897,111 @@ class RACF:
         await self.bot.delete_message(ctx.message)
 
 
-    # @commands.command()
-    # @checks.has_any_role(*BOTCOMMANDER_ROLE)
-    # async def fuck(self, ctx):
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def hardreact(self, ctx):
+        '''react to previous msg with some hardcoded emojis'''
+        server = ctx.message.server
+        channel = ctx.message.channel
+
+        messages = []
+        async for m in self.bot.logs_from(channel, limit=2):
+            messages.append(m)
+        message = messages[1]
+        new_emojis = [':regional_indicator_f:', ':regional_indicator_u:',
+            ':regional_indicator_c:', ':regional_indicator_k:']
+        for emoji in new_emojis:
+            try:
+                await self.bot.add_reaction(message, 341060371697762315)
+            except discord.HTTPException:
+                # reaction add failed
+                pass
+            except discord.Forbidden:
+                await self.bot.say(
+                    "I don’t have permission to react to that message.")
+                break
+            except discord.InvalidArgument:
+                await self.bot.say("Invalid arguments for emojis")
+                break
+
+        await self.bot.delete_message(ctx.message)
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def smile(self, ctx):
+        ''' reacts previous message with smile emoji'''
+        server = self.bot.get_server('264119826069454849')
+        for i in server.emojis:
+            if str(i).find(':red_line:')!=-1 :
+                emoji = i
+
+        # emoji = '<:red_line:341272752705241088>'
+        await self.bot.say(emoji)
+        await self.bot.add_reaction(ctx.message, '🙂')
+
+        # await ctx.invoke(self.addreactnoid, emoji)
+
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def emojitest(self, ctx, emoji : discord.Emoji):
+        await self.bot.say(emoji)
+
+    async def reactbefore(self, message, *emoji):
+        # messages = []
+        # async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+        #     messages.append(m)
+        # message = messages[1]
+        for e in emoji:
+            await self.bot.add_reaction(message, e)
+
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def lolno(self, ctx):
+        '''reacts previous message with a :lolno: emoji'''
+        server = self.bot.get_server('291126049268563968')
+        for i in server.emojis:
+            if str(i).find(':lolno:')!=-1 :
+                emoji = i
+
+        messages = []
+        async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+            messages.append(m)
+        message = messages[1]
+        await self.reactbefore(message, emoji)
+        await self.bot.delete_message(ctx.message)
+
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def damn(self, ctx):
+        '''reacts previous message with d, a, m, n emojis'''
+        await ctx.invoke(self.reactword, 'damn')
+
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def reactword(self, ctx, word):
+        '''react to previous message with any word given. because you can only react with each
+        emoji once, if two or more of the same letter are given  it will ignore anything after
+        the first of those letters.
+        syntax:
+        [p]reactword hi
+
+        if you do [p]reactword lolollollolol
+        it will onlt react with  one of each l and o emojis
+        '''
+        messages = []
+        async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+            messages.append(m)
+        message = messages[1]
+        try:
+            for l in word:
+                await self.reactbefore(message, emojiletter[l])
+        except:
+            await self.bot.say("Invalid text, must be only alphabetic")
+        await self.bot.delete_message(ctx.message)
 
     # @commands.command(pass_context=True, no_pm=True)
     # async def toggleheist(self, ctx: Context):

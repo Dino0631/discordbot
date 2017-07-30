@@ -264,7 +264,7 @@ class RACF:
         await ctx.invoke(mm.changerole, member, *roles)
 
     @commands.command(pass_context=True, no_pm=True)
-    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    @commands.has_any_role(*BidOTCOMMANDER_ROLE)
     async def addrole(
             self, ctx, member: discord.Member=None, *, role_name: str=None):
         """Add role to a user.
@@ -648,68 +648,33 @@ class RACF:
         for message in messages:
             await self.bot.clear_reactions(message)
 
+
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions()
-    async def addreaction(self, ctx, *args):
-        """Add reactions to a message by message id.
+    async def addreactchan(self, ctx, chan, *args):
+        """Add reactions to a message by channel.
         
         Add reactions to a specific message id
-        [p]addreation 123456 :white_check_mark: :x: :zzz: 
-        
-        Add reactions to the last message in channel
-        [p]addreation :white_check_mark: :x: :zzz: 
+        [p]addreactchan general :uwot: :lolno: :smile: 
         """
-        channel = ctx.message.channel
-
-        if not len(args):
-            await send_cmd_help(ctx)
+        server = ctx.message.server
+        try:
+            channel_id = channel_name_to_id[chan]
+        except:
+            await self.bot.say("invalid channel, channels are:")
+            y = ''
+            for x in channel_name_to_id:
+                y = y + x +', '
+            y = y[:-2]
+            await self.bot.say(y)
             return
 
-        has_message_id = args[0].isdigit()
-
-        emojis = args[1:] if has_message_id else args
-        message_id = args[0] if has_message_id else None
-
-        if has_message_id:
-            try:
-                message = await self.bot.get_message(channel, message_id)
-            except discord.NotFound:
-                await self.bot.say("Cannot find message with that id.")
-                return
-        else:
-            # use the 2nd last message because the last message would be the command
-            messages = [m async for m in self.bot.logs_from(channel, limit=2)]
-            message = messages[1]
-
-        for emoji in emojis:
-            try:
-                await self.bot.add_reaction(message, emoji)
-            except discord.HTTPException:
-                # reaction add failed
-                pass
-            except discord.Forbidden:
-                await self.bot.say(
-                    "I don’t have permission to react to that message.")
-                break
-            except discord.InvalidArgument:
-                await self.bot.say("Invalid arguments for emojis")
-                break
-
-        await self.bot.delete_message(ctx.message)
-
-
-    @commands.command(pass_context=True, no_pm=True)
-    @checks.mod_or_permissions()
-    async def addreaction2(self, ctx, *args):
-        """Add reactions to a message by message id.
-        
-        Add reactions to a specific message id
-        [p]addreation 123456 :white_check_mark: :x: :zzz: 
-        
-        Add reactions to the last message in channel
-        [p]addreation :white_check_mark: :x: :zzz: 
-        """
-        channel = ctx.message.channel
+        message = ctx.message
+        server2 = ctx.message.server
+        dinoserver = self.bot.get_server('264119826069454849') #dino's test server
+        abeserver = self.bot.get_server('291126049268563968')
+        channel = abeserver.get_channel(channel_id)
+        #abe's server's general channel
 
         if not len(args):
             await send_cmd_help(ctx)
@@ -727,12 +692,30 @@ class RACF:
                 return
         else:
             # use the 2nd last message because the last message would be the command
-            messages = [m async for m in self.bot.logs_from(channel, limit=2)]
-            message = messages[1]
+            messages = []
+            async for m in self.bot.logs_from(channel, limit=2):
+                messages.append(m)
+            message = messages[0]
+        # await self.bot.say(emojis)
 
-        await self.bot.say(message.id)
-        await self.bot.say(emojis)
-        for emoji in emojis:
+        useremojis = list(emojis)
+        new_emojis = []
+        
+        for e in useremojis:
+            lastlist = new_emojis
+            for x in server.emojis:
+                ename = e[e.find(':') + 1 : e.rfind(':')]
+                # await self.bot.say("{} == {}".format(x.name, ename))
+                if(x.name == ename):
+                    new_emojis.append(x)
+            if(lastlist == new_emojis):
+                new_emojis.append(e)
+
+        # await self.bot.say(message.id)
+        # await self.bot.say(type(emojis[0]))
+        # await self.bot.say(type(server.emojis[0]))
+        # await self.bot.add_reaction(message, server.emojis[0])
+        for emoji in new_emojis:
             try:
                 await self.bot.add_reaction(message, emoji)
             except discord.HTTPException:
@@ -748,6 +731,151 @@ class RACF:
 
         await self.bot.delete_message(ctx.message)
 
+
+
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions()
+    async def addreact(self, ctx, *args):
+        """Add reactions to a message by message id.
+        
+        Add reactions to a specific message id
+        [p]addreation 123456 :uwot: :lolno: :smile: 
+        
+        Add reactions to the last message in channel
+        [p]addreation :uwot: :lolno: :smile:
+        """
+        server = ctx.message.server
+        channel = ctx.message.channel
+
+        if not len(args):
+            await send_cmd_help(ctx)
+            return
+
+        has_message_id = args[0].isdigit()
+
+        emojis = args[1:] if has_message_id else args
+        message_id = args[0] if has_message_id else None
+        if has_message_id:
+            try:
+                message = await self.bot.get_message(channel, message_id)
+            except discord.NotFound:
+                await self.bot.say("Cannot find message with that id.")
+                return
+        else:
+            # use the 2nd last message because the last message would be the command
+            messages = []
+            async for m in self.bot.logs_from(channel, limit=2):
+                messages.append(m)
+            message = messages[1]
+        # await self.bot.say(emojis)
+
+        useremojis = list(emojis)
+        new_emojis = []
+        
+        for e in useremojis:
+            lastlist = new_emojis
+            for x in server.emojis:
+                ename = e[e.find(':') + 1 : e.rfind(':')]
+                # await self.bot.say("{} == {}".format(x.name, ename))
+                if(x.name == ename):
+                    new_emojis.append(x)
+            if(lastlist == new_emojis):
+                new_emojis.append(e)
+
+        # await self.bot.say(message.id)
+        # await self.bot.say(type(emojis[0]))
+        # await self.bot.say(type(server.emojis[0]))
+        # await self.bot.add_reaction(message, server.emojis[0])
+        for emoji in new_emojis:
+            try:
+                await self.bot.add_reaction(message, emoji)
+            except discord.HTTPException:
+                # reaction add failed
+                pass
+            except discord.Forbidden:
+                await self.bot.say(
+                    "I don’t have permission to react to that message.")
+                break
+            except discord.InvalidArgument:
+                await self.bot.say("Invalid arguments for emojis")
+                break
+
+        await self.bot.delete_message(ctx.message)
+
+
+
+
+    async def addreact(self, ctx, *args):
+        """Add reactions to a message by message id.
+        
+        Add reactions to a specific message id
+        [p]addreation 123456 :uwot: :lolno: :smile: 
+        
+        Add reactions to the last message in channel
+        [p]addreation :uwot: :lolno: :smile:
+        """
+        server = ctx.message.server
+        channel = ctx.message.channel
+
+        if not len(args):
+            await send_cmd_help(ctx)
+            return
+
+        has_message_id = args[0].isdigit()
+
+        emojis = args[1:] if has_message_id else args
+        message_id = args[0] if has_message_id else None
+        if has_message_id:
+            try:
+                message = await self.bot.get_message(channel, message_id)
+            except discord.NotFound:
+                await self.bot.say("Cannot find message with that id.")
+                return
+        else:
+            # use the 2nd last message because the last message would be the command
+            messages = []
+            async for m in self.bot.logs_from(channel, limit=2):
+                messages.append(m)
+            message = messages[1]
+        # await self.bot.say(emojis)
+
+        useremojis = list(emojis)
+        new_emojis = []
+        
+        for e in useremojis:
+            lastlist = new_emojis
+            for x in server.emojis:
+                ename = e[e.find(':') + 1 : e.rfind(':')]
+                # await self.bot.say("{} == {}".format(x.name, ename))
+                if(x.name == ename):
+                    new_emojis.append(x)
+            if(lastlist == new_emojis):
+                new_emojis.append(e)
+
+        # await self.bot.say(message.id)
+        # await self.bot.say(type(emojis[0]))
+        # await self.bot.say(type(server.emojis[0]))
+        # await self.bot.add_reaction(message, server.emojis[0])
+        for emoji in new_emojis:
+            try:
+                await self.bot.add_reaction(message, emoji)
+            except discord.HTTPException:
+                # reaction add failed
+                pass
+            except discord.Forbidden:
+                await self.bot.say(
+                    "I don’t have permission to react to that message.")
+                break
+            except discord.InvalidArgument:
+                await self.bot.say("Invalid arguments for emojis")
+                break
+
+        await self.bot.delete_message(ctx.message)
+
+
+    @commands.command()
+    @checks.has_any_role(*BOTCOMMANDER_ROLE)
+    async def fuck(self, ctx):
 
     # @commands.command(pass_context=True, no_pm=True)
     # async def toggleheist(self, ctx: Context):
@@ -1167,7 +1295,7 @@ class RACF:
 
         message = ctx.message
         server2 = ctx.message.server
-        server = self.bot.get_server('264119826069454849') #dino's test server
+        dinoserver = self.bot.get_server('264119826069454849') #dino's test server
         abeserver = self.bot.get_server('291126049268563968')
         general_channel = abeserver.get_channel(channel_id)
         #abe's server's general channel

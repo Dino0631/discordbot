@@ -873,9 +873,9 @@ class RACF:
         await self.bot.delete_message(ctx.message)
 
 
-    @commands.command()
-    @checks.has_any_role(*BOTCOMMANDER_ROLE)
-    async def fuck(self, ctx):
+    # @commands.command()
+    # @checks.has_any_role(*BOTCOMMANDER_ROLE)
+    # async def fuck(self, ctx):
 
     # @commands.command(pass_context=True, no_pm=True)
     # async def toggleheist(self, ctx: Context):

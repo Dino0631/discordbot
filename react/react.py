@@ -93,6 +93,15 @@ emojiletter={
     'y2': '<:y2:',
     'z2': '<:z2:'
 }
+channel_name_to_id = {
+    'general'    : '291126049268563968',
+    'botspam'    : '340737442367799297',
+    'cr'         : '291128641335853056',
+    'streamclips': '292351030971334658',
+    'memes'      : '302615325390798849',
+    'gaschamber' : '340368355754115074',
+    'botdev'     : '340372201578430467'
+}
 
 BOTCOMMANDER_ROLE = ["Bot Commander"]
 
@@ -218,15 +227,57 @@ class REACT:
         abeserver = self.bot.get_server('291126049268563968')
         channel = abeserver.get_channel(channel_id)
         #abe's server's general channel
+        
+        word = map(lambda x:x.lower(),word)
+        
         messages = []
         async for m in self.bot.logs_from(channel, limit=2):
             messages.append(m)
         message = messages[0]
         i = 0
+        word2 = []
+        for l in word:
+            word2.append(l)
+
+        counts = Counter(word2) # so we have: {'name':3, 'state':1, 'city':1, 'zip':2}
+        for s,num in counts.items():
+            if num > 1: # ignore strings that only appear once
+                for suffix in range(1, num + 1): # suffix starts at 1 and increases by 1 each time
+                        word2[word2.index(s)] = s + str(suffix) # replace each appearance of s
+        for i, item in enumerate(word2):
+            if ('2' not in word2[i]):
+                word2[i]= str(word2[i])[0]
+
+        word2 = list(map(lambda l: emojiletter[l], word2))
+        # await self.bot.say(word2)
+
+        new_emojis = []
+        server = self.bot.get_server('264119826069454849')
+        for e in word2:
+            lastlist = new_emojis
+            for x in server.emojis:
+                ename = e[e.find(':') + 1 : e.rfind(':')]
+                # await self.bot.say("{} == {}".format(x.name, ename))
+                if(x.name == ename):
+                    new_emojis.append(x)
+            if(lastlist == new_emojis and ('<:' not in e)):
+                new_emojis.append(e)
+        # await self.bot.say(new_emojis)
+
+        # await self.bot.say(word2)
+
+        # for i, item in enumerate(word2):
+        #     await self.bot.say(len(word2[i]))
+        #     if(len(word2[i])!=1 and word2[i] != str(word2[i])[0]+'2'):
+        #         await self.bot.say("wow")
+        #         word2[i] = str(word2[i])[0]
+        i = 0
+        # await self.bot.say(word2)
         try:
-            for l in word:
+            for l in new_emojis:
                 if i<20:
-                    await self.reactbefore(message, emojiletter[l])
+                    # await self.bot.say('`{}`'.format(l))
+                    await self.bot.add_reaction(message, l)
                     i = i + 1
             if(i==20):
                 await self.bot.say("reaction emoji limit(20) reached")

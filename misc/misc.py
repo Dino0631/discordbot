@@ -23,6 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+import time
 import os
 from cogs.utils.dataIO import dataIO
 import itertools
@@ -36,6 +37,7 @@ from random import choice
 import aiohttp
 from __main__ import send_cmd_help
 from cogs.economy import SetParser
+from collections import Counter # Counter counts the number of occurrences of each item
 
 emojiletter={
     'a' : '🇦',
@@ -63,7 +65,33 @@ emojiletter={
     'w' : '🇼',
     'x' : '🇽',
     'y' : '🇾',
-    'z' : '🇿'
+    'z' : '🇿',
+    'a2': '<:a2:',
+    'b2': '<:b2:',
+    'c2': '<:c2:',
+    'd2': '<:d2:',
+    'e2': '<:e2:',
+    'f2': '<:f2:',
+    'g2': '<:g2:',
+    'h2': '<:h2:',
+    'i2': '<:i2:',
+    'j2': '<:j2:',
+    'k2': '<:k2:',
+    'l2': '<:l2:',
+    'm2': '<:m2:',
+    'n2': '<:n2:',
+    'o2': '<:o2:',
+    'p2': '<:p2:',
+    'q2': '<:q2:',
+    'r2': '<:r2:',
+    's2': '<:s2:',
+    't2': '<:t2:',
+    'u2': '<:u2:',
+    'v2': '<:v2:',
+    'w2': '<:w2:',
+    'x2': '<:x2:',
+    'y2': '<:y2:',
+    'z2': '<:z2:'
 }
 
 channel_name_to_id = {
@@ -682,7 +710,7 @@ class RACF:
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions()
-    async def addreactchan(self, ctx, chan, *args):
+    async def reactchan(self, ctx, chan, *args):
         """Add reactions to a message by channel.
         
         Add reactions to a specific message id
@@ -760,6 +788,60 @@ class RACF:
                 await self.bot.say("Invalid arguments for emojis")
                 break
 
+        await self.bot.delete_message(ctx.message)
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def reactwordchan(self, ctx, chan, word):
+        '''react to previous message with any word given. because you can only react with each
+        emoji once, if two or more of the same letter are given  it will ignore anything after
+        the first of those letters.
+        syntax:
+        [p]reactword hi
+
+        if you do [p]reactword lolollollolol
+        it will onlt react with  one of each l and o emojis
+        '''
+        try:
+            channel_id = channel_name_to_id[chan]
+        except:
+            await self.bot.say("invalid channel, channels are:")
+            y = ''
+            for x in channel_name_to_id:
+                y = y + x +', '
+            y = y[:-2]
+            await self.bot.say(y)
+            return
+
+        message = ctx.message
+        server2 = ctx.message.server
+        dinoserver = self.bot.get_server('264119826069454849') #dino's test server
+        abeserver = self.bot.get_server('291126049268563968')
+        channel = abeserver.get_channel(channel_id)
+        #abe's server's general channel
+        messages = []
+        async for m in self.bot.logs_from(channel, limit=2):
+            messages.append(m)
+        message = messages[0]
+        i = 0
+        try:
+            for l in word:
+                if i<20:
+                    await self.reactbefore(message, emojiletter[l])
+                    i = i + 1
+            if(i==20):
+                await self.bot.say("reaction emoji limit(20) reached")
+                messages = []
+                async for m in self.bot.logs_from(channel, limit=2):
+                    messages.append(m)
+                message = messages[0]
+                time.sleep(2)
+                await self.bot.delete_message(message)
+
+
+
+        except:
+            await self.bot.say("Invalid text, must be only alphabetic")
         await self.bot.delete_message(ctx.message)
 
 
@@ -987,7 +1069,7 @@ class RACF:
 
     @commands.command(pass_context=True)
     @commands.has_any_role(*BOTCOMMANDER_ROLE)
-    async def reactword(self, ctx, word):
+    async def reactwordold(self, ctx, word):
         '''react to previous message with any word given. because you can only react with each
         emoji once, if two or more of the same letter are given  it will ignore anything after
         the first of those letters.
@@ -1001,9 +1083,104 @@ class RACF:
         async for m in self.bot.logs_from(ctx.message.channel, limit=2):
             messages.append(m)
         message = messages[1]
+        i = 0
         try:
             for l in word:
-                await self.reactbefore(message, emojiletter[l])
+                if i<20:
+                    await self.reactbefore(message, emojiletter[l])
+                    i = i + 1
+            if(i==20):
+                await self.bot.say("reaction emoji limit(20) reached")
+                messages = []
+                async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+                    messages.append(m)
+                message = messages[0]
+                time.sleep(2)
+                await self.bot.delete_message(message)
+
+
+
+        except:
+            await self.bot.say("Invalid text, must be only alphabetic")
+        await self.bot.delete_message(ctx.message)
+
+
+
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def reactword(self, ctx, word):
+        '''react to previous message with any word given. because you can only react with each
+        emoji once, if two or more of the same letter are given  it will ignore anything after
+        the first of those letters.
+        syntax:
+        [p]reactword hi
+
+        if you do [p]reactword lolollollolol
+        it will onlt react with  two of each l and o emojis
+        '''
+
+        word = map(lambda x:x.lower(),word)
+        
+        messages = []
+        async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+            messages.append(m)
+        message = messages[1]
+        i = 0
+        word2 = []
+        for l in word:
+            word2.append(l)
+
+        counts = Counter(word2) # so we have: {'name':3, 'state':1, 'city':1, 'zip':2}
+        for s,num in counts.items():
+            if num > 1: # ignore strings that only appear once
+                for suffix in range(1, num + 1): # suffix starts at 1 and increases by 1 each time
+                        word2[word2.index(s)] = s + str(suffix) # replace each appearance of s
+        for i, item in enumerate(word2):
+            if ('2' not in word2[i]):
+                word2[i]= str(word2[i])[0]
+
+        word2 = list(map(lambda l: emojiletter[l], word2))
+        # await self.bot.say(word2)
+
+        new_emojis = []
+        server = self.bot.get_server('264119826069454849')
+        for e in word2:
+            lastlist = new_emojis
+            for x in server.emojis:
+                ename = e[e.find(':') + 1 : e.rfind(':')]
+                # await self.bot.say("{} == {}".format(x.name, ename))
+                if(x.name == ename):
+                    new_emojis.append(x)
+            if(lastlist == new_emojis and ('<:' not in e)):
+                new_emojis.append(e)
+        # await self.bot.say(new_emojis)
+
+        # await self.bot.say(word2)
+
+        # for i, item in enumerate(word2):
+        #     await self.bot.say(len(word2[i]))
+        #     if(len(word2[i])!=1 and word2[i] != str(word2[i])[0]+'2'):
+        #         await self.bot.say("wow")
+        #         word2[i] = str(word2[i])[0]
+        i = 0
+        # await self.bot.say(word2)
+        try:
+            for l in new_emojis:
+                if i<20:
+                    # await self.bot.say('`{}`'.format(l))
+                    await self.bot.add_reaction(message, l)
+                    i = i + 1
+            if(i==20):
+                await self.bot.say("reaction emoji limit(20) reached")
+                messages = []
+                async for m in self.bot.logs_from(ctx.message.channel, limit=2):
+                    messages.append(m)
+                message = messages[0]
+                time.sleep(2)
+                await self.bot.delete_message(message)
+
+
+
         except:
             await self.bot.say("Invalid text, must be only alphabetic")
         await self.bot.delete_message(ctx.message)
@@ -1352,7 +1529,19 @@ class RACF:
     @commands.command(pass_context=True, no_pm=True)
     async def test(self, ctx):
         """Test."""
-        await self.bot.say("test")
+        word2 = ['h', 'e', 'l', 'l','l','l', 'o']
+        await self.bot.say(word2)
+        counts = Counter(word2) # so we have: {'name':3, 'state':1, 'city':1, 'zip':2}
+        for s,num in counts.items():
+            if num > 1: # ignore strings that only appear once
+                for suffix in range(1, num + 1): # suffix starts at 1 and increases by 1 each time
+                        word2[word2.index(s)] = s + str(suffix) # replace each appearance of s
+        for i, item in enumerate(word2):
+            if('1' in word2[i]):
+                word2[i]= str(word2[i])[0]
+
+        await self.bot.say(word2)
+
 
     @commands.has_any_role(*BOTCOMMANDER_ROLE)
     @commands.command(pass_context=True, no_pm=True)

@@ -506,6 +506,13 @@ class REACT:
         await self.bot.delete_message(ctx.message)
 
 
+    @commands.command(pass_context=True)
+    @commands.has_any_role(*BOTCOMMANDER_ROLE)
+    async def example(self, ctx):
+        '''reacts previous message with d, a, m, n emojis'''
+        await ctx.invoke(self.reactword, 'example')
+
+
 def setup(bot):
     r = REACT(bot)
     bot.add_cog(r)
